@@ -1,0 +1,13 @@
+/*
+ * capacitance_meter.h
+ *
+ *  Created on: Jul 3, 2024
+ *      Author: Youssif Hossam
+ */
+
+#ifndef HAL_CAPACITANCE_METER_CAPACITANCE_METER_H_
+#define HAL_CAPACITANCE_METER_CAPACITANCE_METER_H_
+
+
+
+#endif /* HAL_CAPACITANCE_METER_CAPACITANCE_METER_H_ */

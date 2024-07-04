@@ -1,0 +1,13 @@
+/*
+ * mode_selector.h
+ *
+ *  Created on: Jul 2, 2024
+ *      Author: Youssif Hossam
+ */
+
+#ifndef HAL_MODE_SELECTOR_MODE_SELECTOR_H_
+#define HAL_MODE_SELECTOR_MODE_SELECTOR_H_
+
+
+
+#endif /* HAL_MODE_SELECTOR_MODE_SELECTOR_H_ */

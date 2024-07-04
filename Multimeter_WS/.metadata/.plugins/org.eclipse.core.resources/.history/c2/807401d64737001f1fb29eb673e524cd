@@ -1,0 +1,271 @@
+
+#include "ads1110.h"
+#include "../../MCAL/I2C/i2c.h"
+#include <util/delay.h>
+#include <math.h>
+
+/*==============================================================================================================*
+    VARIABLES
+ *==============================================================================================================*/
+
+static uint8 _devAddr;
+static uint8 _config;
+static int _vref;
+static uint8 _comBuffer;
+
+
+/*==============================================================================================================*
+    CONSTRUCTOR
+ *==============================================================================================================*/
+
+void ADS1110_init(uint8 devAddr) {
+	_devAddr = devAddr;
+	_config = DEFAULT_CONFIG;
+	_vref = INT_REF;
+	_comBuffer = COM_SUCCESS;
+
+	I2C_ConfigType config = {
+			BAUDRATE_400KHZ,  	// Set your desired baud rate
+			0x50               	// Set your device address
+	};
+	I2C_init(&config);  // Initialize I2C with configuration
+}
+
+/*==============================================================================================================*
+    PING (0 = SUCCESS / 1-7 = I2C ERROR CODE)
+ *==============================================================================================================*/
+
+uint8 ADS1110_ping() {
+	I2C_start(_devAddr);
+	I2C_stop();
+	return COM_SUCCESS;
+}
+
+uint8 ADS1110_getGain() {
+	return (1 << (_config & GAIN_MASK));
+}
+
+uint8 ADS1110_getSampleRate() {
+	switch (_config & SPS_MASK) {
+	case SPS_15:  return  15; break;
+	case SPS_30:  return  30; break;
+	case SPS_60:  return  60; break;
+	case SPS_240: return 240; break;
+	default:      return 0;   break; // Handle unknown case
+	}
+}
+
+uint8 ADS1110_getConMode() {
+	return (_config >> 4) & 0x01;
+}
+
+uint8 ADS1110_getRes() {
+	switch (_config & SPS_MASK) {
+	case SPS_15:  return 16; break;
+	case SPS_30:  return 15; break;
+	case SPS_60:  return 14; break;
+	case SPS_240: return 12; break;
+	default:      return 0;  break; // Handle unknown case
+	}
+}
+
+int ADS1110_getVref() {
+	return _vref;
+}
+
+void ADS1110_setGain(gain_t newGain) {
+	_config = (_config & ~GAIN_MASK) | (newGain & GAIN_MASK);
+}
+
+void ADS1110_setSampleRate(sample_rate_t newRate) {
+	_config = (_config & ~SPS_MASK) | (newRate & SPS_MASK);
+}
+
+void ADS1110_setConMode(uint8 newConMode) {
+	if (newConMode)
+		_config |= (1 << 4);
+	else
+		_config &= ~(1 << 4);
+}
+
+void ADS1110_setRes(res_t newRes) {
+	switch (newRes) {
+	case RES_12: _config = (_config & ~SPS_MASK) | (SPS_240 & SPS_MASK); break;
+	case RES_14: _config = (_config & ~SPS_MASK) | (SPS_60  & SPS_MASK); break;
+	case RES_15: _config = (_config & ~SPS_MASK) | (SPS_30  & SPS_MASK); break;
+	case RES_16: _config = (_config & ~SPS_MASK) | (SPS_15  & SPS_MASK); break;
+	default:     break; // Handle unknown case
+	}
+}
+
+void ADS1110_setVref(vref_t newVref) {
+	_vref = newVref;
+}
+
+void ADS1110_reset() {
+	_config = DEFAULT_CONFIG;
+	_vref = INT_REF;
+}
+
+
+int ADS1110_getData() {
+	uint8 devConfig;
+	int  devData;
+	uint8 attemptCount = 0;
+	if ((_config >> 4) & 0x01) {                         // if device is in 'SINGLE-SHOT' mode...
+		ADS1110_initCall(_config | START_CONVERSION);    // add start conversion command to config uint8
+		ADS1110_endCall();                               // issue start conversion command
+		_delay_ms(MIN_CON_TIME * ADS1110_findMinCode(_config & SPS_MASK)); // wait for conversion to complete
+	}
+
+	while (attemptCount < MAX_NUM_ATTEMPTS) {
+		// Send request to read 3 bytes from device
+		I2C_start((_devAddr << 1) | 1); // Send repeated start condition with device address for read
+		if (I2C_getStatus() != I2C_MR_DATA_ACK) { // Check status after start condition
+			I2C_stop(); // Stop I2C communication
+			_comBuffer = I2C_getStatus(); // Store I2C error code
+			attemptCount = MAX_NUM_ATTEMPTS; // Exit while loop
+		} else {
+			// Read data from device
+			devData = (int)(I2C_readByteWithACK() << 8);
+			devData |= I2C_readByteWithACK();
+			devConfig = I2C_readByteWithNACK();
+
+			// Check if new data is available
+			if (devConfig & 0x80) {
+				_delay_ms(MIN_CON_TIME); // Wait a bit longer if new data is not available
+				attemptCount++;
+			} else {
+				I2C_stop(); // Stop I2C communication
+				return devData; // Return conversion result
+			}
+		}
+	}
+	return 0;                                            // if operation unsuccessful, return 0
+}
+
+/*==============================================================================================================*
+    GET VOLTAGE (mV)
+ *==============================================================================================================*/
+
+// Vin+ = (output_code / (my_min_code  * GAIN)) + _Vreg
+// Output_Code = raw data from device (int)
+// my_min_code = 16 (15_SPS; 16-BIT) / 8 (30_SPS; 15-BIT) / 4 (60_SPS; 14-BIT) / 1 (240_SPS; 12-BIT)
+// _Vref = Vin- (in mV, depends on whether Vin- is connected to GND or to a 2048mV reference source)
+// Vin+ = 0 - 2048mV when Pin Vin- (=_Vref) is connected to GND
+// Vin+ = 0 - 4096mV when Pin Vin- (=_Vref) is connected to an external 2.048V reference source
+
+int ADS1110_getVolt() {
+	uint8 gain = (1 << (_config & GAIN_MASK));
+	uint8 minCode = ADS1110_findMinCode(_config & SPS_MASK);
+	return (round((float)ADS1110_getData() / (float)(minCode * gain)) + _vref);
+}
+
+
+/*==============================================================================================================*
+    GET PERCENTAGE (0-100%)
+ *==============================================================================================================*/
+
+uint8 ADS1110_getPercent() {
+	int lowerLimit = (ADS1110_findMinCode(_config & SPS_MASK) << 11) * -1;
+	int upperLimit = (ADS1110_findMinCode(_config & SPS_MASK) << 11) - 1;
+	return round(ADS1110_mapf(ADS1110_getData(), lowerLimit, upperLimit, 0, 100));
+}
+
+
+/*==============================================================================================================*
+    GET COMMUNICATION RESULT
+ *==============================================================================================================*/
+
+uint8 ADS1110_getComResult() {
+    return _comBuffer;
+}
+
+/*==============================================================================================================*
+    GET CONFIGURATION SETTINGS (FROM DEVICE)
+ *==============================================================================================================*/
+
+uint8 ADS1110_getConfig() {
+    uint8 devConfig = 0;
+
+    // Start I2C communication and send device address with write mode
+    uint8 startStatus = I2C_start(_devAddr << 1);
+
+    if (startStatus != 1) {
+        // Handle error: Start condition failed or no acknowledgment
+        _comBuffer = startStatus;  // Store error status for debugging
+        return devConfig;  // Return 0 or handle error as needed
+    }
+
+    // Write register address to read (if applicable for your device)
+    // Example:
+    // I2C_writeByte(registerAddress);
+
+    // Restart I2C communication for read operation
+    I2C_start((_devAddr << 1) | 1); // Send device address with read mode
+
+    // Read 3 bytes from the device
+    for (uint8 i = 0; i < NUM_BYTES - 1; ++i) {
+        // Read and discard bytes (if skipping is necessary)
+        I2C_readByteWithACK();
+    }
+
+    // Read the last byte (device configuration)
+    devConfig = I2C_readByteWithNACK();
+
+    // End I2C communication
+    I2C_stop();
+
+    return devConfig;  // Return device configuration byte
+}
+
+
+/*==============================================================================================================*
+    SET CONFIGURATION REGISTER
+ *==============================================================================================================*/
+
+void ADS1110_setConfig(uint8 newConfig) {
+	ADS1110_initCall(newConfig);
+	ADS1110_endCall();
+    if (_comBuffer == COM_SUCCESS) _config = newConfig;
+}
+
+/*==============================================================================================================*
+    FIND MINIMAL CODE (BASED ON SAMPLE RATE)
+ *==============================================================================================================*/
+
+uint8 ADS1110_findMinCode(sample_rate_t sampleRate){
+	switch (sampleRate) {
+	case (SPS_15) : return MIN_CODE_15;  break;
+	case (SPS_30) : return MIN_CODE_30;  break;
+	case (SPS_60) : return MIN_CODE_60;  break;
+	case (SPS_240): return MIN_CODE_240; break;
+	}
+	return 0;
+}
+
+/*==============================================================================================================*
+    MAP FLOATING POINT HELPER FUNCTION (FOR PERCENT CALCULATION)
+ *==============================================================================================================*/
+
+double ADS1110_mapf(double val, double in_min, double in_max, double out_min, double out_max) {
+    return ((val - in_min) * (out_max - out_min) / (in_max - in_min) + out_min);
+}
+
+/*==============================================================================================================*
+    INITIATE I2C COMMUNICATION
+ *==============================================================================================================*/
+
+void ADS1110_initCall(uint8 data) {
+	I2C_start(_devAddr);
+	I2C_writeByte(data);
+}
+
+/*==============================================================================================================*
+    END I2C COMMUNICATION
+ *==============================================================================================================*/
+
+void ADS1110_endCall() {
+	_comBuffer = COM_SUCCESS;
+}
+

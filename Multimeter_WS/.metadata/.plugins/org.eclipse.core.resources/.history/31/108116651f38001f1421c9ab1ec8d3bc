@@ -1,0 +1,13 @@
+/*
+ * voltmeter.h
+ *
+ *  Created on: Jul 2, 2024
+ *      Author: Youssif Hossam
+ */
+
+#ifndef HAL_VOLTMETER_VOLTMETER_H_
+#define HAL_VOLTMETER_VOLTMETER_H_
+
+
+
+#endif /* HAL_VOLTMETER_VOLTMETER_H_ */

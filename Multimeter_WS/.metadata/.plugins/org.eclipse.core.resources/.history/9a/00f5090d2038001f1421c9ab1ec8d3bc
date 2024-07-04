@@ -1,0 +1,16 @@
+/*
+ * voltmeter.c
+ *
+ *  Created on: Jul 2, 2024
+ *      Author: Youssif Hossam
+ */
+
+
+#include "voltmeter.h"
+
+
+float VOLTMETER_getReading(ADS1015 *ads){
+	float adc, volt;
+	adc = ADS1015_readADC_Differential_0_1(ads);;
+	volt = (adc*3*11/1000);
+}

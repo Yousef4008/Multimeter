@@ -1,0 +1,44 @@
+/*	____________________________________________________________________________
+  |																			    |
+  | Driver: Current Meter													    |
+  |																			    |
+  | File Name: current_meter.c												    |
+  |																			    |
+  | Description: Source file for current meter driver						    |
+  |																			    |
+  | Author: Youssif Hossam													    |
+  |_____________________________________________________________________________|
+ */
+
+#include "current_meter.h"
+
+/*______________________________________________________________________________
+ |                               Functions Definitions                          |
+ |______________________________________________________________________________|
+ */
+
+/*
+ * Description :
+ * -> Function responsible for getting the current reading.
+ * -> This function measures the current by reading the ADC values multiple times,
+ *    averaging the results, and applying the appropriate conversion to obtain
+ *    the current in amperes.
+ */
+float CURRENT_METER_getReading(ADS1015 * ads){
+	float current = 0;
+	uint16 adc;
+
+	/* Read the ADC values and accumulate */
+	for(uint8 i = 0 ; i < CURRENT_METER_VOLTAGE_MEASURMENT_COUNT ; i++){
+		adc = ADS1015_readADC_SingleEnded(ads, CURRENT_METER_VOUT_ADS_CHANNEL_NUM);
+		current += ((float)adc / 333);
+	}
+
+	/* Calculate the average ADC value */
+	current /= CURRENT_METER_VOLTAGE_MEASURMENT_COUNT;
+
+	/* Convert the averaged ADC value to current */
+	current = ((current - 2.5015) / CURRENT_METER_ACS712ELCTR_20A_T_SENSITIVITY);
+
+	return current;
+}

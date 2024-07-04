@@ -1,0 +1,145 @@
+/*
+ * APP.c
+ *
+ *  Created on: Jun 30, 2024
+ *      Author: Youssif Hossam
+ */
+
+
+#include "HAL/LCD/lcd.h"
+#include "HAL/OHMMETER/ohmmeter.h"
+#include "HAL/VOLTMETER/voltmeter.h"
+#include "HAL/CAPACITANCE_METER/capacitance_meter.h"
+#include "HAL/INDUCTANCE_METER/inductance_meter.h"
+#include "HAL/ADS1015/ads1015.h"
+#include "HAL/MODE_SELECTOR/mode_selector.h"
+
+#include "MCAL/ADC/adc.h"
+#include "MCAL/TIMER1/timer1.h"
+#include "LIB/std_types.h"
+
+#include <util/delay.h>
+#include <avr/io.h>
+
+int main(void){
+
+	ADC_ConfigType  ADC_MyConfig = {Ext_AVCC , PRESCALER_128};
+	ADS1015 ads;
+
+	float resistance, voltage, capacitance, iductance, current;
+	int read_loop = 0;
+	float Sens_volt = 0;
+	float adc3; // Leemos el ADC, con 16 bits
+
+	uint8 ohmSymbol[] = {0x0E, 0x11, 0x11, 0x11, 0x1B, 0x0A, 0x1B};
+
+	OHMMETER_unitType resistanceUnit;
+	CAPACITANCE_unitType capacitanceUnit = NO_SCALE;
+
+	Mode_type currentMode, previousMode = NO_MODE;
+	SREG |= 1<<7;
+
+	ADC_init(&ADC_MyConfig);
+
+	ADS1015_init(&ads, ADS1015_ADDRESS);
+	ADS1015_begin(&ads);
+	ADS1015_setGain(&ads, GAIN_TWOTHIRDS);
+
+	LCD_init();
+	LCD_StoreCustomPtrn(ohmSymbol, 0);
+
+	while(1){
+		Sens_volt = 0;
+		read_loop = 0;
+		while(read_loop < 100)
+		{
+			adc3 = ADS1015_readADC_SingleEnded(&ads, 3);
+			Sens_volt += (adc3/333);
+			read_loop = read_loop + 1;
+		}
+
+		//133 233
+		Sens_volt = Sens_volt/100;
+		current = ((Sens_volt - 2.502)/0.1); //Ecuación  para obtener la corriente
+		LCD_clearScreen();
+		LCD_floatToString(current);
+		_delay_ms(50);
+
+	}
+	while(1){
+
+		MODE_SELECTOR_run(&currentMode, &previousMode);
+
+		LCD_moveCursor(1,5);
+		LCD_displayString("           ");
+		LCD_moveCursor(1,5);
+
+		switch(currentMode){
+
+		case OHMMETER_MODE:
+			resistance = OHMMETER_getReading(&ads, &resistanceUnit);
+			LCD_floatToString(resistance);
+			switch(resistanceUnit){
+			case OHMS:
+				LCD_DisplayCustomPtrn(0);
+				break;
+			case K_OHMS:
+				LCD_displayCharacter('K');
+				LCD_DisplayCustomPtrn(0);
+				break;
+			case M_OHMS:
+				LCD_displayCharacter('M');
+				LCD_DisplayCustomPtrn(0);
+
+				break;
+			}
+			break;
+
+			case VOLTMETER_MODE:
+				voltage = VOLTMETER_getReading(&ads);
+				LCD_floatToString(voltage);
+				LCD_displayCharacter('V');
+				break;
+			case CAPMETER_MODE:
+				capacitance = CAPACITANCE_METER_getReading(&capacitanceUnit);
+				if(capacitanceUnit != NO_SCALE){
+					LCD_floatToString(capacitance);
+					switch(capacitanceUnit){
+					case PICO_FARAD:
+						LCD_displayString("pF");
+						break;
+					case NANO_FARAD:
+						LCD_displayString("nF");
+						break;
+					case MICRO_FARAD:
+						LCD_displayString("uF");
+						break;
+					case MILLI_FARAD:
+						LCD_displayString("mF");
+						break;
+					case FARAD:
+						LCD_displayString("F");
+						break;
+					case NO_SCALE:
+						/* Do Nothing .. */
+						break;
+					}
+				}
+				break;
+			case INDUCTOMETER_MODE:
+				iductance = INDUCTANCE_METER_getReading();
+				LCD_floatToString(iductance);
+				LCD_displayString("uH");
+				break;
+			case CURRENTMETER_MODE:
+				break;
+			case NO_MODE:
+				/* Do Nothing .. */
+				break;
+		}
+		_delay_ms(500);
+	}
+
+
+	return 0;
+}

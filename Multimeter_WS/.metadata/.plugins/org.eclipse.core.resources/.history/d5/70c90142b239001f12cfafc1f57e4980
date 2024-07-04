@@ -1,0 +1,44 @@
+/*
+ * inductance_meter.c
+ *
+ *  Created on: Jul 4, 2024
+ *      Author: Youssif Hossam
+ */
+
+
+#include "inductance_meter.h"
+#include <util/delay.h>
+
+float INDUCTANCE_METER_getReading(){
+	float iductance;
+	Timer1_ConfigType Timer1_Config = {0, 0, NO_PRESCALER, NORMAL_MODE};
+
+	GPIO_writePin(PORTD_ID, PIN0_ID, LOGIC_HIGH);
+	_delay_ms(5);
+	GPIO_writePin(PORTD_ID, PIN0_ID, LOGIC_LOW);
+
+	if(GPIO_readPin(PORTA_ID, PIN3_ID) == LOGIC_HIGH){
+		while(GPIO_readPin(PORTA_ID, PIN3_ID) == LOGIC_HIGH);
+		Timer1_init(&Timer1_Config);
+		while(GPIO_readPin(PORTA_ID, PIN3_ID) == LOGIC_LOW);
+		while(GPIO_readPin(PORTA_ID, PIN3_ID) == LOGIC_HIGH);
+		while(GPIO_readPin(PORTA_ID, PIN3_ID) == LOGIC_LOW);
+		while(GPIO_readPin(PORTA_ID, PIN3_ID) == LOGIC_HIGH);
+		iductance = Timer1_getCount();
+		Timer1_deInit();
+	}
+	else{
+		while(GPIO_readPin(PORTA_ID, PIN3_ID) == LOGIC_LOW);
+		Timer1_init(&Timer1_Config);
+		while(GPIO_readPin(PORTA_ID, PIN3_ID) == LOGIC_HIGH);
+		while(GPIO_readPin(PORTA_ID, PIN3_ID) == LOGIC_LOW);
+		while(GPIO_readPin(PORTA_ID, PIN3_ID) == LOGIC_HIGH);
+		while(GPIO_readPin(PORTA_ID, PIN3_ID) == LOGIC_LOW);
+		iductance = Timer1_getCount();
+		Timer1_deInit();
+	}
+	t /= 32;
+	iductance = (t*t)/(4*(3.14159*3.14159)*1);
+
+	return iductance;
+}

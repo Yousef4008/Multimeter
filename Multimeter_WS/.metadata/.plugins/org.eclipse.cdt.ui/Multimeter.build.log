@@ -1,0 +1,40 @@
+08:05:29 **** Incremental Build of configuration Debug for project Multimeter ****
+make all 
+Building file: ../APP.c
+Invoking: AVR Compiler
+avr-gcc -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega32 -DF_CPU=16000000UL -MMD -MP -MF"APP.d" -MT"APP.o" -c -o "APP.o" "../APP.c"
+In file included from ../APP.c:26:
+c:/winavr-20100110/lib/gcc/../../avr/include/util/delay.h:90:3: warning: #warning "Compiler optimizations disabled; functions from <util/delay.h> won't work as designed"
+Finished building: ../APP.c
+ 
+Building target: Multimeter.elf
+Invoking: AVR C Linker
+avr-gcc -Wl,-Map,Multimeter.map -mmcu=atmega32 -o "Multimeter.elf"  ./MCAL/WIRE/wire.o  ./MCAL/TIMER1/timer1.o  ./MCAL/I2C/i2c.o  ./MCAL/GPIO/gpio.o  ./MCAL/ADC/adc.o  ./HAL/VOLTMETER/voltmeter.o  ./HAL/OHMMETER/ohmmeter.o  ./HAL/MODE_SELECTOR/mode_selector.o  ./HAL/LM35_SENSOR/lm35_sensor.o  ./HAL/LCD/lcd.o  ./HAL/INDUCTANCE_METER/inductance_meter.o  ./HAL/CURRENT_METER/current_meter.o  ./HAL/CAPACITANCE_METER/capacitance_meter.o  ./HAL/BUZZER/buzzer.o  ./HAL/ADS1015/ads1015.o  ./APP.o     -lm
+Finished building target: Multimeter.elf
+ 
+Invoking: AVR Create Extended Listing
+avr-objdump -h -S Multimeter.elf  >"Multimeter.lss"
+Finished building: Multimeter.lss
+ 
+Create Flash image (ihex format)
+avr-objcopy -R .eeprom -R .fuse -R .lock -R .signature -O ihex Multimeter.elf  "Multimeter.hex"
+Finished building: Multimeter.hex
+ 
+Invoking: Print Size
+avr-size --format=avr --mcu=atmega32 Multimeter.elf
+AVR Memory Usage
+----------------
+Device: atmega32
+
+Program:   21982 bytes (67.1% Full)
+(.text + .data + .bootloader)
+
+Data:        289 bytes (14.1% Full)
+(.data + .bss + .noinit)
+
+
+Finished building: sizedummy
+ 
+
+08:05:30 Build Finished. 0 errors, 1 warnings. (took 495ms)
+

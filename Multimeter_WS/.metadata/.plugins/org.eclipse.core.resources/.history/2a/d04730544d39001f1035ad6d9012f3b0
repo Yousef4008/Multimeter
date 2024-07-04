@@ -1,0 +1,15 @@
+/*
+ * capacitance_meter.h
+ *
+ *  Created on: Jul 3, 2024
+ *      Author: Youssif Hossam
+ */
+
+#ifndef HAL_CAPACITANCE_METER_CAPACITANCE_METER_H_
+#define HAL_CAPACITANCE_METER_CAPACITANCE_METER_H_
+
+#include "../../MCAL/ADC/adc.h"
+#include "../../MCAL/GPIO/gpio.h"
+#include "../../MCAL/TIMER1/timer1.h"
+
+#endif /* HAL_CAPACITANCE_METER_CAPACITANCE_METER_H_ */

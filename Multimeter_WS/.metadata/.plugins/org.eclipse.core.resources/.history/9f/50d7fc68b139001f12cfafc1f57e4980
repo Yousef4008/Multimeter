@@ -1,0 +1,13 @@
+/*
+ * inductance_meter.h
+ *
+ *  Created on: Jul 4, 2024
+ *      Author: Youssif Hossam
+ */
+
+#ifndef HAL_INDUCTANCE_METER_INDUCTANCE_METER_H_
+#define HAL_INDUCTANCE_METER_INDUCTANCE_METER_H_
+
+
+
+#endif /* HAL_INDUCTANCE_METER_INDUCTANCE_METER_H_ */

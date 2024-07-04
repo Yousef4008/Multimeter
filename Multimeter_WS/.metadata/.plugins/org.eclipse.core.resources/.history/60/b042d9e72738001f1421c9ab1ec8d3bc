@@ -1,0 +1,13 @@
+/*
+ * mode_selector.c
+ *
+ *  Created on: Jul 2, 2024
+ *      Author: Youssif Hossam
+ */
+
+
+#include "mode_selector.h"
+
+void MODE_SELECTOR_run(Mode_type * currentMode, Mode_type * previousMode){
+
+}

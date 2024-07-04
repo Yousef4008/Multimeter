@@ -1,0 +1,13 @@
+/*
+ * current_meter.h
+ *
+ *  Created on: Jul 4, 2024
+ *      Author: Youssif Hossam
+ */
+
+#ifndef HAL_CURRENT_METER_CURRENT_METER_H_
+#define HAL_CURRENT_METER_CURRENT_METER_H_
+
+
+
+#endif /* HAL_CURRENT_METER_CURRENT_METER_H_ */

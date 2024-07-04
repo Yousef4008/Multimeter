@@ -1,0 +1,26 @@
+/*
+ * inductance_meter.h
+ *
+ *  Created on: Jul 4, 2024
+ *      Author: Youssif Hossam
+ */
+
+#include "../../MCAL/GPIO/gpio.h"
+#include "../../MCAL/TIMER1/timer1.h"
+#include "../../LIB/std_types.h"
+
+
+#ifndef HAL_INDUCTANCE_METER_INDUCTANCE_METER_H_
+#define HAL_INDUCTANCE_METER_INDUCTANCE_METER_H_
+
+#define INDUCTANCE_METER_CHARGING_PORT_ID				PORTD_ID
+#define INDUCTANCE_METER_CHARGING_PIN_ID				PIN0_ID
+
+#define INDUCTANCE_METER_COMPARATOR_PORT_ID				PORTA_ID
+#define INDUCTANCE_METER_COMPARATOR_PIN_ID				PIN3_ID
+
+#define INDUCTANCE_METER_CAPACITOR_MICROFARAD_VALUE		2
+
+float CAPACITANCE_METER_getReading(CAPACITANCE_unitType * capUnit);
+
+#endif /* HAL_INDUCTANCE_METER_INDUCTANCE_METER_H_ */

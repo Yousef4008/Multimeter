@@ -1,0 +1,56 @@
+/*
+ * mode_selector.c
+ *
+ *  Created on: Jul 2, 2024
+ *      Author: Youssif Hossam
+ */
+
+
+#include "mode_selector.h"
+
+void MODE_SELECTOR_run(Mode_type * currentMode, Mode_type * previousMode){
+	uint16 adc_value;
+	adc_value = ADC_readChannel(0);
+	if(adc_value > 900){
+		*currentMode = OHMMETER_MODE;
+
+	}
+	else if(adc_value > 700) {
+		*currentMode = VOLTMETER_MODE;
+
+	}
+	else if (adc_value > 500){
+		*currentMode = CAPMETER_MODE;
+
+	}
+	else if (adc_value > 300){
+		*currentMode = INDUCTOMETER_MODE;
+
+	}
+	else{
+		*currentMode = CURRENTMETER_MODE;
+
+	}
+
+	if(*currentMode != oldMode){
+		oldMode = *currentMode;
+		LCD_clearScreen();
+		switch(*currentMode){
+		case OHMMETER_MODE:
+			LCD_displayString("Mode1: Ohmmeter");
+			break;
+		case VOLTMETER_MODE:
+			LCD_displayString("Mode2: Voltmeter");
+			break;
+		case CAPMETER_MODE:
+			LCD_displayString("Mode3: Cap");
+			break;
+		case INDUCTOMETER_MODE:
+			LCD_displayString("Mode4: Induct");
+			break;
+		case CURRENTMETER_MODE:
+			LCD_displayString("Mode5: Current");
+			break;
+		}
+	}
+}

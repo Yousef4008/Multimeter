@@ -1,0 +1,13 @@
+/*
+ * ads1015.h
+ *
+ *  Created on: Jul 1, 2024
+ *      Author: Youssif Hossam
+ */
+
+#ifndef HAL_ADS1015_ADS1015_H_
+#define HAL_ADS1015_ADS1015_H_
+
+
+
+#endif /* HAL_ADS1015_ADS1015_H_ */

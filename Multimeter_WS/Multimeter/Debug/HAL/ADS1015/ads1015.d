@@ -1,0 +1,6 @@
+HAL/ADS1015/ads1015.o HAL/ADS1015/ads1015.o: ../HAL/ADS1015/ads1015.c \
+  ../HAL/ADS1015/ads1015.h ../HAL/ADS1015/../../MCAL/WIRE/wire.h
+
+../HAL/ADS1015/ads1015.h:
+
+../HAL/ADS1015/../../MCAL/WIRE/wire.h:

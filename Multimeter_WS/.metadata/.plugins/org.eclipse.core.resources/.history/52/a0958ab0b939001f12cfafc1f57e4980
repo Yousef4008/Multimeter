@@ -1,0 +1,20 @@
+/*
+ * current_meter.h
+ *
+ *  Created on: Jul 4, 2024
+ *      Author: Youssif Hossam
+ */
+
+#ifndef HAL_CURRENT_METER_CURRENT_METER_H_
+#define HAL_CURRENT_METER_CURRENT_METER_H_
+
+#include "../../LIB/std_types.h"
+#include "HAL/ADS1015/ads1015.h"
+
+#define CURRENT_METER_VOUT_ADS_CHANNEL_NUM				3
+
+#define CURRENT_METER_ACS712ELCTR_20A_T_SENSITIVITY		0.1
+
+float INDUCTANCE_METER_getReading();
+
+#endif /* HAL_CURRENT_METER_CURRENT_METER_H_ */

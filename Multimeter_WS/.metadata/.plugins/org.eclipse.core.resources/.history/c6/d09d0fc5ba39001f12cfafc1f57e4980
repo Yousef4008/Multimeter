@@ -1,0 +1,22 @@
+/*
+ * current_meter.c
+ *
+ *  Created on: Jul 4, 2024
+ *      Author: Youssif Hossam
+ */
+
+
+#include "current_meter.h"
+
+
+float CURRENT_METER_getReading(ADS1015 * ads){
+	float current = 0;
+	uint16 adc;
+	for(uint8 i = 0 ; i < 100 ; i++){
+		adc = ADS1015_readADC_SingleEnded(ads, CURRENT_METER_VOUT_ADS_CHANNEL_NUM);
+		current += ( (float)adc / 333 );
+	}
+	current /= 100;
+	current = ((current - 2.5015)/CURRENT_METER_ACS712ELCTR_20A_T_SENSITIVITY); // Current-to-volt formula
+	return current;
+}

@@ -1,0 +1,51 @@
+/*	____________________________________________________________________________
+  |																			    |
+  | Driver: Current Meter													    |
+  |																			    |
+  | File Name: current_meter.c												    |
+  |																			    |
+  | Description: Source file for current meter driver						    |
+  |																			    |
+  | Author: Youssif Hossam													    |
+  |_____________________________________________________________________________|
+ */
+
+#include "current_meter.h"
+
+/*______________________________________________________________________________
+ |                               Functions Definitions                          |
+ |______________________________________________________________________________|
+ */
+
+/*
+ * Description :
+ * -> Function responsible for getting the current reading.
+ * -> This function measures the current by reading the ADC values multiple times,
+ *    averaging the results, and applying the appropriate conversion to obtain
+ *    the current in amperes.
+ */
+float CURRENT_METER_getReading(ADS1015 *ads, CURRENT_Type currentType) {
+    uint16 adcValue;
+    float voltage, current, sum = 0.0;
+    uint8 numSamples = (currentType == CURRENT_AC) ? NUM_SAMPLES_AC : NUM_SAMPLES_DC;
+
+    for (uint8 i = 0; i < numSamples; i++) {
+        adcValue = ADS1015_readADC_SingleEnded(ads, ACS712_PIN); // Read ADC value
+        voltage = (adcValue / 1023.0) * VREF; // Convert ADC value to voltage
+        current = (voltage - ZERO_CURRENT_VOLTAGE) / SENSITIVITY_ACS712_20A; // Convert voltage to current
+
+        if (currentType == CURRENT_AC) {
+            sum += current * current; // Square the current and add to sum for AC
+        } else {
+            sum += current; // Sum the current values for DC
+        }
+    }
+
+    if (currentType == CURRENT_AC) {
+        current = sqrt(sum / numSamples); // Calculate RMS current for AC
+    } else {
+        current = sum / numSamples; // Calculate average current for DC
+    }
+
+    return current;
+}

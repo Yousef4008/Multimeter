@@ -1,0 +1,14 @@
+/*
+ * inductance_meter.c
+ *
+ *  Created on: Jul 4, 2024
+ *      Author: Youssif Hossam
+ */
+
+
+#include "inductance_meter.h"
+#include <util/delay.h>
+
+float INDUCTANCE_METER_getReading(){
+
+}

@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">&#x0A;<refactoring comment="Rename resource &apos;Multimeter/HAL/ADS1110&apos; to &apos;ADS1015&apos;" description="Rename resource &apos;ADS1110&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="HAL/ADS1110" name="ADS1015" stamp="1719803111557" updateReferences="true"/>&#x0A;<refactoring comment="Rename resource &apos;Multimeter/HAL/ADS1015/adc1015.c&apos; to &apos;ads1015.c&apos;" description="Rename resource &apos;adc1015.c&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="HAL/ADS1015/adc1015.c" name="ads1015.c" stamp="1719803142865" updateReferences="true"/>
+</session>

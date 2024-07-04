@@ -1,0 +1,14 @@
+/*
+ * voltmeter.c
+ *
+ *  Created on: Jul 2, 2024
+ *      Author: Youssif Hossam
+ */
+
+
+#include "voltmeter.h"
+
+
+float VOLTMETER_getReading(ADS1015 *ads){
+
+}

@@ -1,0 +1,62 @@
+/*
+ * adc1015.c
+ *
+ *  Created on: Jul 1, 2024
+ *      Author: Youssif Hossam
+ */
+
+#include "ads1015.h"
+#include "../../MCAL/WIRE/wire.h"
+
+
+static uint8_t i2cread(void) {
+
+	return Wire_read();
+
+}
+
+static void i2cwrite(uint8_t x) {
+
+	Wire_write((uint8_t)x);
+
+}
+
+static void writeRegister(uint8_t i2cAddress, uint8_t reg, uint16_t value) {
+	Wire_beginTransmission(i2cAddress);
+	i2cwrite((uint8_t)reg);
+	i2cwrite((uint8_t)(value>>8));
+	i2cwrite((uint8_t)(value & 0xFF));
+	Wire_endTransmission();
+}
+
+static uint16_t readRegister(uint8_t i2cAddress, uint8_t reg)
+{
+	Wire_beginTransmission(i2cAddress);
+	i2cwrite(ADS1015_REG_POINTER_CONVERT);
+	Wire_endTransmission();
+	Wire_requestFrom(i2cAddress, (uint8_t)2);
+	return ((i2cread() << 8) | i2cread());
+}
+
+void ADS1015_init(ADS1015* ads, uint8_t i2cAddress)
+{
+	ads->i2cAddress = i2cAddress;
+	ads->conversionDelay = ADS1015_CONVERSIONDELAY;
+	ads->bitShift = 4;
+	ads->gain = GAIN_TWOTHIRDS; /* +/- 6.144V range (limited to VDD +0.3V max!) */
+}
+
+void ADS1015_begin(ADS1015* ads)
+{
+	Wire_begin();
+}
+
+void ADS1015_setGain(ADS1015* ads, adsGain gain)
+{
+	ads->gain = gain;
+}
+
+adsGain ADS1015_getGain(ADS1015* ads)
+{
+	return ads->gain;
+}
